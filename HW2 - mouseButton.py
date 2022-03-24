@@ -12,7 +12,7 @@ background_image_filename = 'image/curve_pattern.png'
 background = pygame.image.load(background_image_filename).convert()
 width, height = background.get_size()
 screen = pygame.display.set_mode((width, height), 0, 32)
-pygame.display.set_caption("ImagePolylineMouseButton")
+pygame.display.set_caption("Hasanboy - hw2")
   
 # Define the colors we will use in RGB format
 BLACK = (  0,   0,   0)
@@ -37,21 +37,45 @@ def drawPoint(pt, color='GREEN', thick=3):
 
 #HW2 implement drawLine with drawPoint
 def drawLine(pt0, pt1, color='GREEN', thick=3):
-    #drawPoint((100,100), color,  thick)
-    pt0 = np.array(pt0, dtype=np.float32)
-    pt1 = np.array(pt1, dtype=np.float32)
+    x = pt0[0]
+    y = pt0[1]
+    x1 = pt0[0]
+    y1 = pt0[1]
+    x2 = pt1[0]
+    y2 = pt1[1]
 
-    drawPoint(pt0, color, thick)
-    drawPoint(pt1, color, thick)
+    dx = abs(x2-x1)
+    dy = abs(y2-y1)
+    gradient = dy/dx
 
-    for t in np.arange(0,1,0.01):
-        l_t = (1-t)*pt0+t*pt1
-        drawPoint(l_t, color, thick)
+    if gradient >1:
+        dx,dy = dy,dx
+        x , y = y , x
+        x1, y1 = y1, x1
+        x2, y2 = y2, x2
+
+    p = 2 * dy - dx
+
+    for k in range(dx):
+        x = x+1 if x < x2 else x-1
+        if p>0:
+            y = y+1 if y < y2 else y -1
+            p = p+2*(dy-dx)
+        else:
+            p = p+2*dy
+
+        if gradient < 1:
+            drawPoint([x, y], color, thick)
+        else:
+            drawPoint([y, x], color, thick)
+    # drawPoint((100,100), color,  thick)
+    # drawPoint(pt0, color, thick)
+    # drawPoint(pt1, color, thick)
 
 def drawPolylines(color='GREEN', thick=3):
     if(count < 2): return
     for i in range(count-1):
-        drawLine(pts[i], pts[i+1], color)
+        drawLine(pts[i], pts[i+1], color,thick)
         #pygame.draw.line(screen, color, pts[i], pts[i+1], thick)
 
 #Loop until the user clicks the close button.
@@ -85,9 +109,9 @@ while not done:
         pts.append(pt) 
         count += 1
         pygame.draw.rect(screen, BLUE, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
-        print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
-    else:
-        print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
+        #print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
+    #else:
+        #print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
 
     if len(pts)>1:
         drawPolylines(GREEN, 1)
@@ -100,4 +124,3 @@ while not done:
     old_pressed = pressed
 
 pygame.quit()
-
