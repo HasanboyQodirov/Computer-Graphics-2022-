@@ -37,15 +37,22 @@ def drawPoint(pt, color='GREEN', thick=3):
 
 #HW2 implement drawLine with drawPoint
 def drawLine(pt0, pt1, color='GREEN', thick=3):
-    drawPoint((100,100), color,  thick)
+    #drawPoint((100,100), color,  thick)
+    pt0 = np.array(pt0, dtype=np.float32)
+    pt1 = np.array(pt1, dtype=np.float32)
+
     drawPoint(pt0, color, thick)
     drawPoint(pt1, color, thick)
+
+    for t in np.arange(0,1,0.01):
+        l_t = (1-t)*pt0+t*pt1
+        drawPoint(l_t, color, thick)
 
 def drawPolylines(color='GREEN', thick=3):
     if(count < 2): return
     for i in range(count-1):
-        # drawLine(pts[i], pts[i+1], color)
-        pygame.draw.line(screen, color, pts[i], pts[i+1], thick)
+        drawLine(pts[i], pts[i+1], color)
+        #pygame.draw.line(screen, color, pts[i], pts[i+1], thick)
 
 #Loop until the user clicks the close button.
 done = False
