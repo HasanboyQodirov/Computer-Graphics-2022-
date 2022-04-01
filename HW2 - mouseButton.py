@@ -1,7 +1,7 @@
 import pygame
 from sys import exit
 import numpy as np
-    
+
 width = 800
 height = 600
 pygame.init()
@@ -12,8 +12,8 @@ background_image_filename = 'image/curve_pattern.png'
 background = pygame.image.load(background_image_filename).convert()
 width, height = background.get_size()
 screen = pygame.display.set_mode((width, height), 0, 32)
-pygame.display.set_caption("Hasanboy - hw2")
-  
+pygame.display.set_caption("HW2 Hasanboy")
+
 # Define the colors we will use in RGB format
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
@@ -21,106 +21,98 @@ BLUE =  (  0,   0, 255)
 GREEN = (  0, 255,   0)
 RED =   (255,   0,   0)
 
-pts = [] 
-knots = []
-count = 0
 #screen.blit(background, (0,0))
 screen.fill(WHITE)
 
 # https://kite.com/python/docs/pygame.Surface.blit
-clock= pygame.time.Clock()
+clock = pygame.time.Clock()
 
 
 def drawPoint(pt, color='GREEN', thick=3):
     # pygame.draw.line(screen, color, pt, pt)
     pygame.draw.circle(screen, color, pt, thick)
 
-#HW2 implement drawLine with drawPoint
+# HW2 implement drawLine with drawPoint
+
+
 def drawLine(pt0, pt1, color='GREEN', thick=3):
-    x = pt0[0]
-    y = pt0[1]
-    x1 = pt0[0]
-    y1 = pt0[1]
-    x2 = pt1[0]
-    y2 = pt1[1]
+    # Native Implementation
+    """
+    steps = 1e-2
+    a1 = 0
 
-    dx = abs(x2-x1)
-    dy = abs(y2-y1)
-    gradient = dy/dx
+    while a1 <= 1:
+        a0 = 1-a1
+        drawPoint(
+            (a0 * pt0[0] + a1 * pt1[0], a0 * pt0[1] + a1 * pt1[1]), # a0 * p0 + a1 * p1
+            color,
+            thick
+        )
+        a1 += steps
+    """
+    # Numpy Implementation
+    A = np.array([pt0, pt1]).T
+    # Generate a0 and a1, with constraint a0 + a1 = 1 and a0, a1 >= 0
+    #a = np.linspace((0, 1), (1, 0), num=100).T
+    dist = np.linalg.norm(A[:,0] - A[:,1])
+    a0 = np.arange(0, 1, 1 / dist)
+    a1 = 1 - a0
+    a = np.array([a0, a1])
 
-    if gradient >1:
-        dx,dy = dy,dx
-        x , y = y , x
-        x1, y1 = y1, x1
-        x2, y2 = y2, x2
+    XY = np.dot(A, a).T  # Coords for points on the line between pt0 and pt1
 
-    p = 2 * dy - dx
+    for x, y in XY:
+        drawPoint((x, y), color, thick)
 
-    for k in range(dx):
-        x = x+1 if x < x2 else x-1
-        if p>0:
-            y = y+1 if y < y2 else y -1
-            p = p+2*(dy-dx)
-        else:
-            p = p+2*dy
 
-        if gradient < 1:
-            drawPoint([x, y], color, thick)
-        else:
-            drawPoint([y, x], color, thick)
-    # drawPoint((100,100), color,  thick)
-    # drawPoint(pt0, color, thick)
-    # drawPoint(pt1, color, thick)
+def drawPolylines(points, color='GREEN', thick=3):
+    if len(points) < 2:
+        return
+    for i in range(len(points)-1):
+        drawLine(points[i], points[i+1], color, thick=1)
 
-def drawPolylines(color='GREEN', thick=3):
-    if(count < 2): return
-    for i in range(count-1):
-        drawLine(pts[i], pts[i+1], color,thick)
-        #pygame.draw.line(screen, color, pts[i], pts[i+1], thick)
 
-#Loop until the user clicks the close button.
+def drawPolyLines2(points, color='GREEN', thick=3):
+    if len(points) < 2:
+        return
+    drawLine(points[-2], points[-1], color, thick)
+
+
+# Loop until the user clicks the close button.
 done = False
-pressed = 0
 margin = 6
-old_pressed = 0
-old_button1 = 0
+pts = []
 
-while not done:   
+while not done:
     # This limits the while loop to a max of 10 times per second.
     # Leave this out and we will use all CPU we can.
     time_passed = clock.tick(30)
 
     for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pressed = -1            
-        elif event.type == pygame.MOUSEBUTTONUP:
-            pressed = 1            
-        elif event.type == pygame.QUIT:
+        if event.type == pygame.QUIT:
             done = True
-        else:
-            pressed = 0
 
-    button1, button2, button3 = pygame.mouse.get_pressed()
+    button = pygame.mouse.get_pressed()
     x, y = pygame.mouse.get_pos()
-    pt = [x, y]
+    pt = (x, y)
     pygame.draw.circle(screen, RED, pt, 0)
 
-    if old_pressed == -1 and pressed == 1 and old_button1 == 1 and button1 == 0 :
-        pts.append(pt) 
-        count += 1
-        pygame.draw.rect(screen, BLUE, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
-        #print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed)+" add pts ...")
-    #else:
-        #print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y)+" button:"+repr(button1)+" pressed:"+repr(pressed))
+    print("len:"+repr(len(pts))+" mouse x:"+repr(x)+" y:"+repr(y) +
+          " button:"+repr(button[0])+" pressed:"+repr(button))
 
-    if len(pts)>1:
-        drawPolylines(GREEN, 1)
-        # drawLagrangePolylines(BLUE, 10, 3)
+    if button[0]:
+        pts.append(pt)
+        pygame.draw.rect(
+            screen, BLUE, (pt[0]-margin, pt[1]-margin, 2*margin, 2*margin), 5)
+        drawPolyLines2(pts, GREEN, 1)
+        print("Add points ...")
+
+    elif button[2]:
+        pts.clear()
+        screen.fill(WHITE)
 
     # Go ahead and update the screen with what we've drawn.
     # This MUST happen after all the other drawing commands.
     pygame.display.update()
-    old_button1 = button1
-    old_pressed = pressed
 
 pygame.quit()
