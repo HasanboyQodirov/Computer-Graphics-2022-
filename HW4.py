@@ -3,7 +3,7 @@ from typing import List, Tuple
 import numpy as np
 import pygame
 width = 800
-height = 600
+height = 700
 
 pygame.init()
 screen = pygame.display.set_mode((width, height), 0, 32)
